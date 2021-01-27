@@ -24,9 +24,11 @@ class KaarpUser(AbstractBaseUser, PermissionsMixin):
     device_id = models.CharField(max_length=20, null=True, blank=True)
     is_approved = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
-    role = models.OneToOneField(UserRoles, on_delete=models.PROTECT, null=True, blank=True)
-    date_joined = models.DateTimeField(default=timezone.now)
+    role = models.ForeignKey(UserRoles, on_delete=models.PROTECT, null=True, blank=True)
+    datetime_of_request = models.DateTimeField(default=timezone.now)
+    datetime_of_activation = models.DateTimeField(null=True, blank=True)
 
+    # mandatory field of accessing django admin panel
     is_staff = models.BooleanField(default=False)
 
     USERNAME_FIELD = 'email'
