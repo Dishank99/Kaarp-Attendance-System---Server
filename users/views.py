@@ -61,9 +61,11 @@ class UserRequests(APIView):
         pending_requests = KaarpUser.objects.filter(role__role=user_type, is_approved=False, is_active=False, is_superuser=False)
 
         if from_date and to_date:
-            from_date = datetime.strptime(from_date, '%Y-%m-%d')
-            to_date = datetime.strptime(to_date, '%Y-%m-%d') 
+            from_date = datetime.strptime(f'{from_date} 00:00:00', '%Y-%m-%d %H:%M:%S')
+            to_date = datetime.strptime(f'{to_date} 23:59:59', '%Y-%m-%d %H:%M:%S')
             pending_requests = pending_requests.filter(datetime_of_request__range=(from_date, to_date))
+
+        pending_requests = pending_requests.order_by('-datetime_of_request')
 
         result_set = {'requests':UserRequestSerializer(pending_requests,many=True).data}
 
@@ -98,12 +100,13 @@ class UserRequests(APIView):
                 email=email, mobile_no=mobile_no, 
                 defaults={
                     'fname': fname, 'lname': lname, 
-                    'role' : role_for_given_user_type
+                    'role' : role_for_given_user_type,
+                    'is_active': False,
                 }
             )
             if is_created:
                 request_data = UserRequestSerializer(request).data
-                return Response({'details':'Request Created', 'request_data':request_data}, content_type='appication/json',status=HTTP_20O_OK)
+                return Response({'details':'Request Created', 'request_data':request_data}, content_type='appication/json',status=HTTP_200_OK)
                 
             else:
                 return Response({'details':'Request for this email and mobile no is already present'}, 
