@@ -84,10 +84,11 @@ class UserRequests(APIView):
         mobile_no = request.data.get('mobile_no')
         user_type = request.data.get('user_type')
 
+        # condition to prevent not null constraint
         if fname and lname and email and mobile_no and user_type:
             try:
                 role_for_given_user_type = UserRoles.objects.get(role = user_type)
-            except UserRoles.DoesNotExists:
+            except UserRoles.DoesNotExist:
                 return Response({'details':'Please mention the correct user_type'}, content_type='application/json', status=HTTP_400_BAD_REQUEST)
             
             # checks if request for given email and mobile no is present, if yes than the object is stored in request
@@ -108,7 +109,7 @@ class UserRequests(APIView):
                 return Response({'details':'Request for this email and mobile no is already present'}, 
                                 content_type='application/json', status=HTTP_409_CONFLICT)
         else:
-            return Response({'details':'Please mention the complete request'}, content_type='application/json', status=HTTP_400_BAD_REQUEST)
+            return Response({'details':'Please mention the complete request body'}, content_type='application/json', status=HTTP_400_BAD_REQUEST)
         
     '''
     updates the request from pending to approved
@@ -166,3 +167,24 @@ class UserRequests(APIView):
 
         pending_request.delete()
         return Response({'details':'Request Deleted'}, content_type='appication/json',status=HTTP_204_NO_CONTENT)
+
+class UserProfile(APIView):
+    '''
+    returns user info against given id
+    for active users and non superusers
+    query params:
+        id
+    response body:
+        id, fname, lname, email, mobile_no, device_id, is_active, role
+    '''
+    def get(self,request):
+        user_id = request.query_params.get('id')
+
+        try:
+            user_profile = KaarpUser.objects.get(id=user_id, is_superuser=False, is_active=True)
+        except KaarpUser.DoesNotExist :
+            return Response({'details':'User Not Found'}, content_type='application/json', status=HTTP_404_NOT_FOUND)
+        
+        result_set = {'user':UserSerializer(user_profile).data}
+        return Response(result_set, content_type='application/json', status=HTTP_200_OK)
+
