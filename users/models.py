@@ -40,5 +40,17 @@ class KaarpUser(AbstractBaseUser, PermissionsMixin):
     def fullname(self):
         return f'{self.fname} {self.lname}'
 
+    def is_mobile_no_of_user_valid(self, mobile_no):
+        '''
+        get mobileNo from user table and check userId and Mobile no.
+        If it is same then it is valid user and set "null" or get the user name from mobile no. 
+        and set is his "Name" and save his/her name in same object and if it is new mobile no. then set to "That Mobile No."
+        '''
+        if mobile_no == self.mobile_no:
+            return None
+        else:
+            return mobile_no
+
+
     def __str__(self):
         return self.fullname if self.fullname != ' ' else self.email
