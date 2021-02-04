@@ -74,6 +74,10 @@ class DailyRecord(APIView):
         mobile_no = request.data.get('mobile_no')
         user_id = request.data.get('user_id')
 
+        if not latitude or not longitude or not timestamp or not mobile_no or not user_id:
+            return Response({'details':'Please mention the complete request body'}, content_type='application/json', status=HTTP_400_BAD_REQUEST)
+
+        # get the user from userid
         try:
             user = User.objects.get(id = user_id)
         except User.DoesNotExist:
@@ -91,11 +95,8 @@ class DailyRecord(APIView):
             return Response({'details':'User already has marked attendance for given date'}, content_type='application/json', status=HTTP_403_FORBIDDEN)
         
         # compute location string from latitude, longitude
-        try:
-            location_string = get_location_string(latitude, longitude)
-        except:
-            return Response({'details':'Could not retrive Location string'}, content_type='application/json', status=HTTP_404_NOT_FOUND)            
-
+        location_string = get_location_string(latitude, longitude)
+        
         # check validity using mobile no
         validity_data = user.is_mobile_no_of_user_valid(mobile_no)
         print(validity_data)
