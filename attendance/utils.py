@@ -13,7 +13,8 @@ def get_location_string(latitude, longitude):
     if response.status_code == 200:
         response = response.json()
         print(response.get('display_name'))
+        return response.get('display_name')
     else:
-        raise Exception('Not Found')
+        return ''
 
-    return response.get('display_name')
+    
